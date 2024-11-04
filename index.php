@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map with Location Selection to Kaaba (Makkah, Saudi Arabia)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        #map {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #ccc;
+            margin-top: 20px;
+        }
+        .controls {
+            margin-bottom: 10px;
+        }
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC6d8lJtOzRCD-1FFkPknYg7uU-cetD3kM&callback=initMap" async defer></script>
+    <script>
+        let map;
+        let makkah = { lat: 21.4224779, lng: 39.8251832 }; // Makkah coordinates
+        let destinationMarker;
+
+        function initMap() {
+            // Initialize the map centered at Makkah
+            map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 10,
+                center: makkah,
+            });
+
+            // Create a marker for Makkah
+            new google.maps.Marker({
+                position: makkah,
+                map: map,
+                title: "Makkah",
+            });
+
+            // Set the destination marker to null initially
+            destinationMarker = null;
+        }
+
+        function updateMap(lat, lng) {
+            const destination = { lat: lat, lng: lng };
+
+            // Clear existing marker if it exists
+            if (destinationMarker) {
+                destinationMarker.setMap(null);
+            }
+
+            // Create a marker for the destination
+            destinationMarker = new google.maps.Marker({
+                position: destination,
+                map: map,
+                title: "Your Selected Location",
+            });
+
+            // Center the map at the new location
+            map.setCenter(destination);
+
+            // Draw the polyline
+            drawRoute(makkah, destination);
+        }
+
+        function drawRoute(start, end) {
+            const pathCoordinates = [start, end];
+            const line = new google.maps.Polyline({
+                path: pathCoordinates,
+                geodesic: true,
+                strokeColor: "#FFD700", // Gold color
+                strokeOpacity: 1.0,
+                strokeWeight: 2,
+            });
+
+            line.setMap(map);
+        }
+
+        function locateUser() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const userLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                    };
+                    updateMap(userLocation.lat, userLocation.lng);
+                }, () => {
+                    alert("Geolocation service failed.");
+                });
+            } else {
+                alert("Your browser doesn't support geolocation.");
+            }
+        }
+
+        function submitCoordinates() {
+            const lat = parseFloat(document.getElementById("latitude").value);
+            const lng = parseFloat(document.getElementById("longitude").value);
+            if (!isNaN(lat) && !isNaN(lng)) {
+                updateMap(lat, lng);
+            } else {
+                alert("Please enter valid latitude and longitude.");
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Your Location to Kaaba (Makkah, Saudi Arabia)</h1>
+    <h2>Select Your Location</h2>
+    <div class="controls">
+        <button onclick="locateUser()">Locate My Position</button>
+        <br><br>
+        <label for="latitude">Latitude:</label>
+        <input type="text" id="latitude" placeholder="Enter latitude">
+        <label for="longitude">Longitude:</label>
+        <input type="text" id="longitude" placeholder="Enter longitude">
+        <button onclick="submitCoordinates()">Submit Coordinates</button>
+    </div>
+    
+    <div id="map"></div>
+    
+    <p>To view detailed directions, visit <a href="https://www.google.com/maps/dir/Makkah/YOUR_DESTINATION" target="_blank">Google Maps</a>.</p>
+</body>
+</html>
